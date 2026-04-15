@@ -1,0 +1,7 @@
+a=b+c*d
+x=(a+b)*c
+y=a*b+c*d
+z=(a+b)*(c+d)
+p=a+b*c+d
+q=(a+b*c)*(d+e*f)
+r=((a+b)*c)+d*e

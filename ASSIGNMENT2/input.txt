@@ -1,0 +1,40 @@
+a = b + c * d;
+
+if (a < b) {
+    x = a + b;
+    y = x * 2;
+} else {
+    x = b * c;
+    y = x + 1;
+}
+
+do {
+    x = x + 1;
+    y = y + x;
+} while (x < y);
+
+if (x >= y) {
+    z = x * y;
+} else {
+    z = x + y;
+}
+
+do {
+    a = a + b * c;
+    d = a * b + c;
+} while (a != d);
+
+if (a == b) {
+    m = a;
+} else {
+    if (a > b) {
+        m = a * b;
+    } else {
+        m = b * c;
+    }
+}
+
+do {
+    p = p + 1;
+    q = p * r + s;
+} while (p <= q);

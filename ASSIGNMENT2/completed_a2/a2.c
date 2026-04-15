@@ -1,0 +1,161 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "a2.h"
+
+int temp_count = 1;
+int label_count = 1;
+
+char* new_temp() {
+    char* t = malloc(10);
+    sprintf(t, "t%d", temp_count++);
+    return t;
+}
+
+char* new_label() {
+    char* l = malloc(10);
+    sprintf(l, "L%d", label_count++);
+    return l;
+}
+
+Node* create_node(char* type, char* value, Node* l, Node* r, Node* t) {
+    Node* n = malloc(sizeof(Node));
+    strcpy(n->type, type);
+    strcpy(n->value, value);
+    n->left = l;
+    n->right = r;
+    n->third = t;
+    n->next = NULL;
+    return n;
+}
+
+Node* append(Node* list, Node* stmt) {
+    if (!list) return stmt;
+    Node* temp = list;
+    while (temp->next) temp = temp->next;
+    temp->next = stmt;
+    return list;
+}
+
+/* -------- IC GENERATION -------- */
+
+char* gen_expr(Node* n) {
+    if (strcmp(n->type, "ID") == 0 || strcmp(n->type, "NUM") == 0)
+        return n->value;
+
+    char* t1 = gen_expr(n->left);
+    char* t2 = gen_expr(n->right);
+
+    char* t = new_temp();
+    printf("(%s, %s, %s, %s)\n", n->value, t1, t2, t);
+    return t;
+}
+
+// void print_postorder(Node* root) {
+//     while (root) {
+//         if (root->left) print_postorder(root->left);
+//         if (root->right) print_postorder(root->right);
+//         if (root->third) print_postorder(root->third);
+
+//         if (strcmp(root->type, "ASSIGN") == 0) {
+//             printf("%s ", root->value);
+//         }
+//         else if (strcmp(root->type, "OP") == 0) {
+//             printf("%s ", root->value);
+//         }
+//         else if (strcmp(root->type, "REL") == 0) {
+//             printf("%s ", root->value);
+//         }
+//         else if (strcmp(root->type, "ID") == 0 ||
+//                  strcmp(root->type, "NUM") == 0) {
+//             printf("%s ", root->value);
+//         }
+
+//         root = root->next;  // move to next statement in the list
+//     }
+// }
+
+void print_single(Node* root) {
+    if (!root) return;
+
+    if (root->left) print_single(root->left);
+    if (root->right) print_single(root->right);
+    if (root->third) print_single(root->third);
+
+    if (strcmp(root->type, "ASSIGN") == 0) {
+        printf("%s ", root->value);
+    }
+    else if (strcmp(root->type, "OP") == 0) {
+        printf("%s ", root->value);
+    }
+    else if (strcmp(root->type, "REL") == 0) {
+        printf("%s ", root->value);
+    }
+    else if (strcmp(root->type, "ID") == 0 ||
+             strcmp(root->type, "NUM") == 0) {
+        printf("%s ", root->value);
+    }
+}
+
+void print_postorder(Node* root) {
+
+    // printf("POSTORDER TRAVERSAL : \n\n");
+    printf("====================================================================================\n\n");
+    while (root) {
+
+        print_single(root);   // print one statement
+        printf("\n");         //  newline per statement
+
+        root = root->next;
+    }
+    printf("====================================================================================\n\n");
+}
+
+void generate_IC(Node* root) {
+    while (root) {
+
+        if (strcmp(root->type, "ASSIGN") == 0) {
+            char* t = gen_expr(root->left);
+            printf("(=, %s, -, %s)\n", t, root->value);
+        }
+
+        else if (strcmp(root->type, "IF") == 0) {
+            char* L1 = new_label();
+            char* L2 = new_label();
+            char* L3 = new_label();
+
+            printf("if %s %s %s goto %s\n",
+                   root->left->left->value,
+                   root->left->value,
+                   root->left->right->value,
+                   L1);
+
+            printf("goto %s\n", L2);
+
+            printf("%s:\n", L1);
+            generate_IC(root->right);
+
+            printf("goto %s\n", L3);
+
+            printf("%s:\n", L2);
+            generate_IC(root->third);
+
+            printf("%s:\n", L3);
+        }
+
+        else if (strcmp(root->type, "DO") == 0) {
+            char* L1 = new_label();
+
+            printf("%s:\n", L1);
+            generate_IC(root->left);
+
+            printf("if %s %s %s goto %s\n",
+                   root->right->left->value,
+                   root->right->value,
+                   root->right->right->value,
+                   L1);
+        }
+
+        root = root->next;
+    }
+}
